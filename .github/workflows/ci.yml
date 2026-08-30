@@ -1,8 +1,8 @@
-name: GarServoPet parent CI
+name: GarServoPet Lyra CI
 
 on:
   push:
-    branches: [main, GarServoPet]
+    branches: [main]
   pull_request:
 
 jobs:
@@ -14,22 +14,14 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Validate repository contracts
+      - name: Validate Lyra repository contracts
         run: |
           sudo apt-get update
-          sudo apt-get install --yes device-tree-compiler gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
-          python3 -m json.tool config/deployments/frdm-imx91s.json >/dev/null
-          python3 -m json.tool config/deployments/frdm-imx91s.artifact.json >/dev/null
-          python3 -m json.tool config/deployments/luckfox-rk3506.json >/dev/null
-          python3 -m json.tool config/deployments/luckfox-rk3506.artifact.json >/dev/null
-          python3 -m json.tool sources/gar-servo-pet/app.json >/dev/null
+          sudo apt-get install --yes device-tree-compiler gcc-arm-linux-gnueabihf
           make check
           node --check panel/components/servo-model.mjs
           node --check panel/components/pca9685.js
           node --check panel/components/sg90.js
-          make -C sources/gar-servo-pet target-build
-          readelf -h sources/gar-servo-pet/build/target/gar-servoctl \
-            | grep -Eq 'Machine:[[:space:]]+AArch64'
           make -B -C sources/gar-servo-pet target-build \
             TARGET_CC=arm-linux-gnueabihf-gcc TARGET_LDFLAGS=-static
           readelf -h sources/gar-servo-pet/build/target/gar-servoctl \
@@ -39,7 +31,7 @@ jobs:
           readelf -A sources/gar-servo-pet/build/target/gar-servoctl \
             | grep -Eq 'Tag_ABI_VFP_args:[[:space:]]+VFP registers'
           sources/gar-servo-pet/build/host/gar-servoctl \
-            --i2c-config hardware/profiles/frdm-imx91s/i2c.csv \
+            --i2c-config hardware/i2c.csv \
             --servo-config hardware/servo-calibration.csv validate
           test -f sources/gar-servo-pet/README.md
           test -f sources/gar-tools/README.md

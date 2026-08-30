@@ -3,7 +3,6 @@
 PRODUCT_BUILD_SCRIPT ?= scripts/product-build.sh
 PRODUCT_ARTIFACTS_SCRIPT ?= scripts/product-artifacts.sh
 PRODUCT_CLEAN_SCRIPT ?= scripts/product-target-build.sh
-DEPLOYMENT ?= frdm-imx91s
 
 ARTIFACT_ROOT ?= artifacts/from-codespace
 BUILD_IMAGE ?= gar-build-env:latest
@@ -35,16 +34,13 @@ artifacts: build
 	fi
 
 check:
-	bash -n scripts/*.sh scripts/targets/*/*.sh \
-		scripts/targets/frdm-imx91s/device-tree/*.sh \
-		scripts/targets/frdm-imx91s/provisioning/uuu/*.sh \
-		config/frdm-imx91s.env.example config/imx91s-uuu.env.example
-	sh -n scripts/targets/luckfox-rk3506/configure-target \
-		scripts/targets/luckfox-rk3506/health
-	scripts/package-target.sh --deployment "$(DEPLOYMENT)" --describe >/dev/null
+	bash -n scripts/*.sh scripts/target/package.sh config/luckfox-rk3506.env.example
+	sh -n scripts/target/configure-target scripts/target/health
+	python3 -m json.tool config/artifact.json >/dev/null
+	python3 -m json.tool hardware/binding.json >/dev/null
+	python3 -m json.tool sources/gar-servo-pet/app.json >/dev/null
 	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
 	node --test tests/servo-model.test.mjs
-	tests/test_product_target_clean.sh
 	tests/test_luckfox_target_clean.sh
 	@if command -v cc >/dev/null 2>&1; then \
 		$(MAKE) -C sources/gar-servo-pet check; \
@@ -60,11 +56,11 @@ check:
 		exit 1; \
 	fi
 	sources/gar-servo-pet/build/host/gar-servoctl \
-		--i2c-config hardware/profiles/frdm-imx91s/i2c.csv \
+		--i2c-config hardware/i2c.csv \
 		--servo-config hardware/servo-calibration.csv validate
 
 clean:
 	@if [ -x "$(PRODUCT_CLEAN_SCRIPT)" ]; then \
-		GAR_DEPLOYMENT="$(DEPLOYMENT)" GAR_ARTIFACT_ROOT="$(ARTIFACT_ROOT)" \
+		GAR_ARTIFACT_ROOT="$(ARTIFACT_ROOT)" \
 			"$(PRODUCT_CLEAN_SCRIPT)" clean; \
 	fi

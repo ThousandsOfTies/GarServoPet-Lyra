@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CAPSULE = REPO_ROOT / "scripts" / "targets" / "luckfox-rk3506"
+CAPSULE = REPO_ROOT / "scripts" / "target"
 OVERLAY = CAPSULE / "rk3506-gar-servo-pet-i2c1-overlay.dts"
 
 

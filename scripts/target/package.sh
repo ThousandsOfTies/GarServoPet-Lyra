@@ -1,39 +1,37 @@
 #!/usr/bin/env bash
-# Luckfox Lyra Plus Target Capsule: cross-build the selected Application
-# Capsule for RK3506/armv7 and produce GAR's SSH application artifact.
+# Luckfox Lyra Plus target: cross-build the fixed GarServoPet application for
+# RK3506/ARMv7 and produce GAR's SSH application artifact.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-: "${GAR_DEPLOYMENT:?deployment dispatcher did not set GAR_DEPLOYMENT}"
-: "${GAR_DEPLOYMENT_PROFILE:?deployment dispatcher did not set GAR_DEPLOYMENT_PROFILE}"
-: "${GAR_PRODUCT_ID:?deployment dispatcher did not set GAR_PRODUCT_ID}"
-: "${GAR_TARGET:?deployment dispatcher did not set GAR_TARGET}"
-: "${GAR_TARGET_ARTIFACT_KIND:?deployment dispatcher did not set GAR_TARGET_ARTIFACT_KIND}"
-: "${GAR_TARGET_ARTIFACT_MANIFEST:?deployment dispatcher did not set GAR_TARGET_ARTIFACT_MANIFEST}"
-: "${GAR_TARGET_DEFAULT_CONFIG:?deployment dispatcher did not set GAR_TARGET_DEFAULT_CONFIG}"
-: "${GAR_TARGET_LOCAL_CONFIG:?deployment dispatcher did not set GAR_TARGET_LOCAL_CONFIG}"
-: "${GAR_APP_ID:?deployment dispatcher did not set GAR_APP_ID}"
-: "${GAR_APP_MANIFEST:?deployment dispatcher did not set GAR_APP_MANIFEST}"
-: "${GAR_APP_ROOT:?deployment dispatcher did not set GAR_APP_ROOT}"
-: "${GAR_APP_BUILD_GOAL:?deployment dispatcher did not set GAR_APP_BUILD_GOAL}"
-: "${GAR_APP_BINARY:?deployment dispatcher did not set GAR_APP_BINARY}"
-: "${GAR_APP_BINARY_NAME:?deployment dispatcher did not set GAR_APP_BINARY_NAME}"
-: "${GAR_APP_ENTRYPOINT:?deployment dispatcher did not set GAR_APP_ENTRYPOINT}"
-: "${GAR_APP_ENTRYPOINT_NAME:?deployment dispatcher did not set GAR_APP_ENTRYPOINT_NAME}"
-: "${GAR_APP_README:?deployment dispatcher did not set GAR_APP_README}"
-: "${GAR_APP_INSTALL_DIR:?deployment dispatcher did not set GAR_APP_INSTALL_DIR}"
-: "${GAR_APP_I2C_CONFIG_DEST:?deployment dispatcher did not set GAR_APP_I2C_CONFIG_DEST}"
-: "${GAR_APP_CONNECTIONS_CONFIG_DEST:?deployment dispatcher did not set GAR_APP_CONNECTIONS_CONFIG_DEST}"
-: "${GAR_APP_SERVO_CONFIG_DEST:?deployment dispatcher did not set GAR_APP_SERVO_CONFIG_DEST}"
-: "${GAR_HARDWARE_BINDING:?deployment dispatcher did not set GAR_HARDWARE_BINDING}"
-: "${GAR_RUNTIME_I2C_CONFIG:?deployment dispatcher did not set GAR_RUNTIME_I2C_CONFIG}"
-: "${GAR_RUNTIME_CONNECTIONS_CONFIG:?deployment dispatcher did not set GAR_RUNTIME_CONNECTIONS_CONFIG}"
-: "${GAR_RUNTIME_SERVO_CONFIG:?deployment dispatcher did not set GAR_RUNTIME_SERVO_CONFIG}"
+: "${GAR_PRODUCT_ID:?fixed Product entrypoint did not set GAR_PRODUCT_ID}"
+: "${GAR_TARGET:?fixed Product entrypoint did not set GAR_TARGET}"
+: "${GAR_TARGET_ARTIFACT_KIND:?fixed Product entrypoint did not set GAR_TARGET_ARTIFACT_KIND}"
+: "${GAR_TARGET_ARTIFACT_MANIFEST:?fixed Product entrypoint did not set GAR_TARGET_ARTIFACT_MANIFEST}"
+: "${GAR_TARGET_DEFAULT_CONFIG:?fixed Product entrypoint did not set GAR_TARGET_DEFAULT_CONFIG}"
+: "${GAR_TARGET_LOCAL_CONFIG:?fixed Product entrypoint did not set GAR_TARGET_LOCAL_CONFIG}"
+: "${GAR_APP_ID:?fixed Product entrypoint did not set GAR_APP_ID}"
+: "${GAR_APP_MANIFEST:?fixed Product entrypoint did not set GAR_APP_MANIFEST}"
+: "${GAR_APP_ROOT:?fixed Product entrypoint did not set GAR_APP_ROOT}"
+: "${GAR_APP_BUILD_GOAL:?fixed Product entrypoint did not set GAR_APP_BUILD_GOAL}"
+: "${GAR_APP_BINARY:?fixed Product entrypoint did not set GAR_APP_BINARY}"
+: "${GAR_APP_BINARY_NAME:?fixed Product entrypoint did not set GAR_APP_BINARY_NAME}"
+: "${GAR_APP_ENTRYPOINT:?fixed Product entrypoint did not set GAR_APP_ENTRYPOINT}"
+: "${GAR_APP_ENTRYPOINT_NAME:?fixed Product entrypoint did not set GAR_APP_ENTRYPOINT_NAME}"
+: "${GAR_APP_README:?fixed Product entrypoint did not set GAR_APP_README}"
+: "${GAR_APP_INSTALL_DIR:?fixed Product entrypoint did not set GAR_APP_INSTALL_DIR}"
+: "${GAR_APP_I2C_CONFIG_DEST:?fixed Product entrypoint did not set GAR_APP_I2C_CONFIG_DEST}"
+: "${GAR_APP_CONNECTIONS_CONFIG_DEST:?fixed Product entrypoint did not set GAR_APP_CONNECTIONS_CONFIG_DEST}"
+: "${GAR_APP_SERVO_CONFIG_DEST:?fixed Product entrypoint did not set GAR_APP_SERVO_CONFIG_DEST}"
+: "${GAR_HARDWARE_BINDING:?fixed Product entrypoint did not set GAR_HARDWARE_BINDING}"
+: "${GAR_RUNTIME_I2C_CONFIG:?fixed Product entrypoint did not set GAR_RUNTIME_I2C_CONFIG}"
+: "${GAR_RUNTIME_CONNECTIONS_CONFIG:?fixed Product entrypoint did not set GAR_RUNTIME_CONNECTIONS_CONFIG}"
+: "${GAR_RUNTIME_SERVO_CONFIG:?fixed Product entrypoint did not set GAR_RUNTIME_SERVO_CONFIG}"
 
-# Target-local settings may select an SDK, but cannot replace the validated
-# deployment composition supplied by package_target.py.
-readonly GAR_DEPLOYMENT GAR_DEPLOYMENT_PROFILE GAR_PRODUCT_ID GAR_TARGET
+# Target-local settings may select an SDK, but cannot replace the fixed
+# Product/application/target composition.
+readonly GAR_PRODUCT_ID GAR_TARGET
 readonly GAR_TARGET_ARTIFACT_KIND GAR_TARGET_ARTIFACT_MANIFEST
 readonly GAR_TARGET_DEFAULT_CONFIG GAR_TARGET_LOCAL_CONFIG
 readonly GAR_APP_ID GAR_APP_MANIFEST GAR_APP_ROOT GAR_APP_BUILD_GOAL
@@ -95,13 +93,12 @@ case "$GAR_APP_BINARY" in
   *) die "application binary must be inside the Application Capsule: $GAR_APP_BINARY" ;;
 esac
 
-capsule_dir="${repo_root}/scripts/targets/luckfox-rk3506"
+capsule_dir="${repo_root}/scripts/target"
 target_configurer="${capsule_dir}/configure-target"
 i2c_overlay="${capsule_dir}/rk3506-gar-servo-pet-i2c1-overlay.dts"
 health_hook="${capsule_dir}/health"
 
 required_files=(
-  "$GAR_DEPLOYMENT_PROFILE"
   "$GAR_HARDWARE_BINDING"
   "$GAR_TARGET_ARTIFACT_MANIFEST"
   "$GAR_APP_ENTRYPOINT"
@@ -119,7 +116,7 @@ done
 [[ -f "${app_dir}/Makefile" ]] || die "application Makefile is missing"
 command -v python3 >/dev/null 2>&1 || die "python3 is required"
 
-artifact_is_this_deployment() {
+artifact_is_this_target() {
   [[ -f "${artifact_root}/artifact.json" ]] || return 1
   python3 - "${artifact_root}/artifact.json" "$GAR_TARGET" "$GAR_APP_ID" "$GAR_APP_INSTALL_DIR" <<'PY'
 import json
@@ -139,20 +136,19 @@ PY
 
 artifact_is_replaceable_product_output() {
   [[ -f "${artifact_root}/artifact.json" ]] || return 1
-  python3 - "${artifact_root}/artifact.json" "$GAR_APP_ID" "$GAR_APP_INSTALL_DIR" <<'PY'
+  python3 - "${artifact_root}/artifact.json" "$GAR_TARGET" "$GAR_APP_ID" "$GAR_APP_INSTALL_DIR" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-path, app, destination = sys.argv[1:]
+path, target, app, destination = sys.argv[1:]
 try:
     manifest = json.loads(Path(path).read_text(encoding="utf-8"))
     files = manifest["deploy"]["app"]["files"]
 except (OSError, ValueError, KeyError, TypeError):
     raise SystemExit(1)
 expected = {"src": f"files/{app}", "dest": destination, "mode": "0755"}
-known_targets = {"frdm-imx91s", "luckfox-rk3506"}
-raise SystemExit(0 if manifest.get("target") in known_targets and expected in files else 1)
+raise SystemExit(0 if manifest.get("target") == target and expected in files else 1)
 PY
 }
 
@@ -162,11 +158,11 @@ if [[ "${1:-}" == "clean" ]]; then
   fi
   if [[ -e "$artifact_root" ]]; then
     [[ ! -L "$artifact_root" ]] || die "refusing symlink artifact root: $artifact_root"
-    if artifact_is_this_deployment; then
+    if artifact_is_this_target; then
       rm -rf -- "$artifact_root"
       echo "removed Luckfox Lyra artifact: $artifact_root"
     else
-      echo "preserved artifact root owned by another deployment: $artifact_root"
+      echo "preserved artifact root not owned by GarServoPet-Lyra: $artifact_root"
     fi
   fi
   exit 0
@@ -176,7 +172,7 @@ fi
 if [[ -e "$artifact_root" ]]; then
   [[ -d "$artifact_root" ]] || die "artifact root exists and is not a directory: $artifact_root"
   artifact_is_replaceable_product_output || \
-    die "refusing to replace an artifact root not owned by a known GarServoPet deployment: $artifact_root"
+    die "refusing to replace an artifact root not owned by GarServoPet-Lyra: $artifact_root"
 fi
 
 sdk_root="${GAR_LUCKFOX_SDK_ROOT:-${LUCKFOX_LYRA_SDK_ROOT:-}}"
