@@ -15,3 +15,12 @@ Product rootです。別の物理targetを追加せず、別Product repository�
 Product固有のhardware CSVや校正値を `sources/gar-tools/targets` に置かないで
 ください。submodule変更は子repositoryで先にcommit・pushし、その後に親pointerを
 更新します。生成artifactはcommitしません。
+
+## Web simulator
+
+For any GAR App simulator, read `sources/gar-tools/AGENTS.md`
+before editing the panel. If the pinned copy lacks it, consult the latest
+gar-tools guide; update the pin when using newer shared components. Build
+reusable device UI and interactions as shared Web
+Components in `sources/gar-tools/web-simulator/components/`; keep Product
+mapping, bridge protocol, and commands in the Product adapter.
